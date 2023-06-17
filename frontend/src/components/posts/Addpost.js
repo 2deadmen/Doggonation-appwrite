@@ -50,10 +50,7 @@ const storage = new Storage(client);
   const [imageurl, setimageurl] = useState("");
   const [content, setcontent] = useState({ caption: "", location: "" });
 
-  // const setLoader=(data)=>{
-  //   setloader(data)
 
-  // }
   const change = (e) => {
     setcontent({ ...content, [e.target.name]: e.target.value });
   };
@@ -83,14 +80,7 @@ const storage = new Storage(client);
           });
   });
 
-const promise = storage.createFile(bucketID,fileID , document.getElementById('uploader').files[0]);
-promise.then(function (response) {
-    console.log(response); // Success
-}, function (error) {
-    console.log(error); // Failure
-});
-const result = storage.getFileDownload(bucketID, fileID);
-setimageurl(result)
+
   }
 
   const CreateUpload = async (e) => {
@@ -123,12 +113,15 @@ setimageurl(result)
 
       const storageRef = ref(storage, `posts/${image.name}`);
 
-      uploadBytes(storageRef, image).then(() => {
-        getDownloadURL(storageRef).then((url) => {
-          setimageurl(url)
-          console.log(url)
-          console.log(imageurl);
-          handleNewPost(url);
+      const promise = storage.createFile(bucketID,fileID , document.getElementById('uploader').files[0]);
+      promise.then(function (response) {
+      console.log(response); // Success
+    }, function (error) {
+      console.log(error); // Failure
+});
+const result = storage.getFileDownload(bucketID, fileID);
+setimageurl(result)
+       
         });
       });
     } catch (e) {
