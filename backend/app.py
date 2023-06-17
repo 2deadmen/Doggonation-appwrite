@@ -70,7 +70,7 @@ client = (
     .set_key(f"{apikey}")
 )
 health = Health(client)
-
+realtime = client.Realtime()
 result = health.get()
 databases = Databases(client)
 users = Users(client)
@@ -358,7 +358,7 @@ def msg():
 room_id = []
 
 
-@socketio.on("connectuser")
+@realtime.on("connectuser")
 def handle_connect(data):
     sender = data["sender_id"]
     reciever = data["reciever_id"]
@@ -395,37 +395,32 @@ def handle_disconnect():
     post_requests.disconnect()
 
 
-@socketio.on("message")
+@realtime.on('message')
 def handle_message(data):
-    room_id = data["room_id"]
-    sender_id = data["sender_id"]
-    text = data["data"]
-    print("room_id", room_id)
+    room_id = data['room_id']
+    sender_id = data['sender_id']
+    text = data['data']
+    print('room_id', room_id)
 
-    # Get the existing chat document from Appwrite
-    result = client.getDocument("room_id", room_id).execute()
-    print(result)
+    # Get the existing chat document from the Realtime Database
+    result = realtime.get(chatID, room_id)
+    existing_list = result['text'] if result and 'text' in result else []
 
-    if result["$id"]:
-        existing_list = result["$snapshot"]["text"]
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        new_element = {
-            "sender": sender_id,
-            "message": text,
-            "time": timestamp,
-        }
+    new_element = {
+        'sender': sender_id,
+        'message': text,
+        'time': timestamp,
+    }
 
-        existing_list.append(new_element)
+    existing_list.append(new_element)
 
-        # Update the chat document in Appwrite
-        client.updateDocument(
-            "<collection-id>", room_id, {"text": existing_list}
-        ).execute()
+    # Update the chat document in the Realtime Database
+    realtime.update(chatID, room_id, {'text': existing_list})
 
-        socketio.emit(
-            "messagerec", {"data": data["data"], "sender_id": data["sender_id"]}
-        )
+    # Emit the 'messagerec' event to all participants in the room
+    realtime.broadcast(room_id, 'messagerec', {'data': text, 'sender_id': sender_id})
 
 
 if __name__ == "__main__":
