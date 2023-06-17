@@ -118,20 +118,7 @@ const Addpost = (props) => {
     }
 
     try {
-      setloading(true);
-      const storage = getStorage();
-
-      const storageRef = ref(storage, `posts/${image.name}`);
-
-      uploadBytes(storageRef, image).then(() => {
-        getDownloadURL(storageRef).then((url) => {
-          setimageurl(url);
-          console.log(url);
-          console.log(imageurl);
-          handleNewPost(url);
-          uploadpic();
-        });
-      });
+      await uploadpic()
     } catch (e) {
       console.log(e);
       setloading(false);
