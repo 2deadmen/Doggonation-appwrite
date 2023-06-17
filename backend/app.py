@@ -358,7 +358,7 @@ def msg():
 room_id = []
 
 
-@realtime.on("connectuser")
+@socket.on("connectuser")
 def handle_connect(data):
     sender = data["sender_id"]
     reciever = data["reciever_id"]
@@ -395,7 +395,7 @@ def handle_disconnect():
     post_requests.disconnect()
 
 
-@realtime.on('message')
+@socket.on('message')
 def handle_message(data):
     room_id = data['room_id']
     sender_id = data['sender_id']
