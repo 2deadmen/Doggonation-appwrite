@@ -71,15 +71,6 @@ const storage = new Storage(client);
       const fileId = payload.$id;
 
       // Get the download URL of the newly created file
-      storage.getFilePreview(fileId)
-          .then((downloadURL) => {
-              console.log('Download URL:', downloadURL);
-          })
-          .catch((error) => {
-              console.error('Error retrieving download URL:', error);
-          });
-  });
-
 
   }
 
@@ -121,6 +112,16 @@ const storage = new Storage(client);
 });
 const result = storage.getFileDownload(bucketID, fileID);
 setimageurl(result)
+            storage.getFilePreview(fileId)
+          .then((downloadURL) => {
+              console.log('Download URL:', downloadURL);
+          })
+          .catch((error) => {
+              console.error('Error retrieving download URL:', error);
+          });
+  });
+
+
        
         });
       });
