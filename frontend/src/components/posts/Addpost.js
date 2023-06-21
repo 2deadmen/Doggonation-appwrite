@@ -81,7 +81,7 @@ const Addpost = (props) => {
 
     const promise = storage.createFile(
       bucketID,
-      fileID,
+      "unique()",
       document.getElementById("uploader").files[0]
     );
     promise.then(
