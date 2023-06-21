@@ -412,33 +412,33 @@ def handle_connect(data):
 def handle_disconnect():
     post_requests.disconnect()
 
-
-@socket.on('message')
+@socketio.on("message")
 def handle_message(data):
-    room_id = data['room_id']
-    sender_id = data['sender_id']
-    text = data['data']
-    print('room_id', room_id)
+    sender = data["sender_id"]
+    receiver = data["receiver_id"]
+    message = data["message"]
 
-    # Get the existing chat document from the Realtime Database
-    result = realtime.get(chatID, room_id)
-    existing_list = result['text'] if result and 'text' in result else []
+    query_sender = Query.equal("sender_id", [sender])
+    query_receiver = Query.equal("receiver_id", [receiver])
 
-    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    result_sender = databases.list_documents(databaseID, chatID, query=[query_sender, query_receiver])
+    result_receiver = databases.list_documents(databaseID, chatID, query=[query_receiver, query_sender])
 
-    new_element = {
-        'sender': sender_id,
-        'message': text,
-        'time': timestamp,
-    }
+    if result_sender and result_receiver:
+        print("Chat exists")
+        room_id = result_sender[0]["room_id"]
+    else:
+        print("Creating chat")
+        chat_data = {
+            "sender_id": sender,
+            "receiver_id": receiver,
+            "messages": []
+        }
+        result = databases.create_document(databaseID, chatID, "unique()", chat_data)
+        room_id = result["room_id"]
 
-    existing_list.append(new_element)
-
-    # Update the chat document in the Realtime Database
-    realtime.update(chatID, room_id, {'text': existing_list})
-
-    # Emit the 'messagerec' event to all participants in the room
-    realtime.broadcast(room_id, 'messagerec', {'data': text, 'sender_id': sender_id})
+ 
+    socketio.emit("message", {"sender_id": sender, "message": message}, room=room_id)
 
 
 if __name__ == "__main__":
