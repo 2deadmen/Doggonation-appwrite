@@ -358,33 +358,51 @@ def msg():
 room_id = []
 
 
-@socket.on("connectuser")
+
+@socketio.on("connectuser")
 def handle_connect(data):
     sender = data["sender_id"]
     reciever = data["reciever_id"]
-    query = Query.equal("sender_id", [sender])
-    query2 = Query.equal("reciever_id", [reciever])
-    query3 = Query.equal("sender_id", [reciever])
-    query4 = Query.equal("reciever_id", [sender])
+    query= Query.equal('sender_id', [sender])
+    query2= Query.equal('reciever_id', [reciever])
+    query3= Query.equal('sender_id', [reciever])
+    query4= Query.equal('reciever_id', [sender])
 
-    result = databases.list_documents(databaseID, chatID, query=[query, query2])
-    result2 = databases.list_documents(databaseID, chatID, query=[query3, query4])
+
+    result = databases.list_documents(databaseID,  chatID,query=[query,query2])
+    result2 = databases.list_documents(databaseID,  chatID,query=[query3,query4])
 
     if result and result2:
         print("dsdsd")
-
+    # mycursor.execute(
+    #     f"select * from `chats` where `sender_id`='{sender}' and `recipient_id`='{reciever}' or `sender_id`='{reciever}' and `recipient_id`='{sender}'"
+    # )
+    # result = mycursor.fetchone()
+    # if result:
+    #     room_id = result[0]
     else:
-        data = {"sender_id": sender, "reciever_id": reciever}
-        result = databases.create_document(databaseID, chatID, "unique()", data)
+        data={
+            "sender_id":sender,
+            "reciever_id":reciever
 
-        toad1 = databases.list_documents(databaseID, chatID, query=[query, query2])
-        toad2 = databases.list_documents(databaseID, chatID, query=[query3, query4])
-
+        }
+        result = databases.create_document(databaseID, chatID, 'unique()', data)
+        # mycursor.execute(
+        #     f"INSERT INTO `chats` (`sender_id`, `recipient_id`) VALUES ( '{sender}', '{reciever}'); "
+        # )
+        # mydb.commit()
+        toad1 = databases.list_documents(databaseID,  chatID,query=[query,query2])
+        toad2 = databases.list_documents(databaseID,  chatID,query=[query3,query4])
+        # mycursor.execute(
+        #     f"select * from `chats` where `sender_id`='{sender}' and `recipient_id`='{reciever}' or `sender_id`='{reciever}' and `recipient_id`='{sender}'"
+        # )
+        # result = mycursor.fetchone()
         if toad1 and toad2:
             print("dsdsd")
             room_id = result[0]
         ##
         print("created")
+        
 
     #    join_room(room_id)
     socketio.emit("connection", {"data": room_id})
